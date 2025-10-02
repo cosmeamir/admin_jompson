@@ -8,6 +8,22 @@ $stats = array_merge([
     'experience' => 0,
 ], $data['stats']);
 $blogs = $data['blogs'];
+$successMessage = $_SESSION['admin_success'] ?? null;
+$errorMessage = $_SESSION['admin_error'] ?? null;
+unset($_SESSION['admin_success'], $_SESSION['admin_error']);
+
+function admin_asset(string $path): string
+{
+    if ($path === '') {
+        return '';
+    }
+
+    if (preg_match('/^https?:\/\//i', $path) === 1 || strpos($path, 'data:') === 0 || strpos($path, '//') === 0) {
+        return $path;
+    }
+
+    return '../' . ltrim($path, '/');
+}
 ?>
 <!DOCTYPE html>
 <html lang="pt">
@@ -31,6 +47,24 @@ $blogs = $data['blogs'];
     </div>
 </header>
 <div class="container mb-5">
+    <?php if ($successMessage): ?>
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <?php echo htmlspecialchars($successMessage, ENT_QUOTES, 'UTF-8'); ?>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Fechar">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    <?php endif; ?>
+
+    <?php if ($errorMessage): ?>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <?php echo htmlspecialchars($errorMessage, ENT_QUOTES, 'UTF-8'); ?>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Fechar">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    <?php endif; ?>
+
     <div class="row">
         <div class="col-lg-6">
             <div class="card mb-4">
@@ -62,7 +96,7 @@ $blogs = $data['blogs'];
                     <strong>Novo artigo do blog</strong>
                 </div>
                 <div class="card-body">
-                    <form method="post" action="save_blog.php">
+                    <form method="post" action="save_blog.php" enctype="multipart/form-data">
                         <input type="hidden" name="action" value="create">
                         <div class="form-group">
                             <label for="title">Título</label>
@@ -77,8 +111,13 @@ $blogs = $data['blogs'];
                             <input type="text" class="form-control" id="author" name="author" required>
                         </div>
                         <div class="form-group">
-                            <label for="image">Imagem (caminho relativo ex: images/image_1.jpg)</label>
-                            <input type="text" class="form-control" id="image" name="image" placeholder="images/image_1.jpg" required>
+                            <label for="image">Imagem (URL) <span class="text-muted small">(opcional)</span></label>
+                            <input type="text" class="form-control" id="image" name="image" placeholder="https://...">
+                        </div>
+                        <div class="form-group">
+                            <label for="image_file">Carregar imagem</label>
+                            <input type="file" class="form-control-file" id="image_file" name="image_file" accept="image/png,image/jpeg,image/webp">
+                            <small class="form-text text-muted">Formatos permitidos: JPG, PNG ou WEBP (máximo de 2&nbsp;MB).</small>
                         </div>
                         <div class="form-group">
                             <label for="excerpt">Resumo</label>
@@ -105,6 +144,14 @@ $blogs = $data['blogs'];
                 <h3 class="h5"><?php echo htmlspecialchars($blog['title'], ENT_QUOTES, 'UTF-8'); ?></h3>
                 <p class="mb-1 text-muted">Slug: <code><?php echo htmlspecialchars($blog['slug'], ENT_QUOTES, 'UTF-8'); ?></code></p>
                 <p class="mb-1"><strong>Data:</strong> <?php echo htmlspecialchars($blog['date'], ENT_QUOTES, 'UTF-8'); ?> | <strong>Autor:</strong> <?php echo htmlspecialchars($blog['author'], ENT_QUOTES, 'UTF-8'); ?></p>
+                <?php if (!empty($blog['image'])): ?>
+                    <div class="mb-3">
+                        <strong>Imagem:</strong>
+                        <div class="mt-2">
+                            <img src="<?php echo htmlspecialchars(admin_asset($blog['image']), ENT_QUOTES, 'UTF-8'); ?>" alt="Pré-visualização do artigo" class="img-fluid rounded" style="max-height: 220px; object-fit: cover;">
+                        </div>
+                    </div>
+                <?php endif; ?>
                 <p class="mb-3"><strong>Resumo:</strong> <?php echo nl2br(htmlspecialchars($blog['excerpt'], ENT_QUOTES, 'UTF-8')); ?></p>
                 <details>
                     <summary>Ver conteúdo completo</summary>
@@ -125,9 +172,10 @@ $blogs = $data['blogs'];
             </div>
             <div class="collapse" id="edit-<?php echo htmlspecialchars($blog['slug'], ENT_QUOTES, 'UTF-8'); ?>">
                 <div class="card-body border-top">
-                    <form method="post" action="save_blog.php">
+                    <form method="post" action="save_blog.php" enctype="multipart/form-data">
                         <input type="hidden" name="action" value="update">
                         <input type="hidden" name="slug" value="<?php echo htmlspecialchars($blog['slug'], ENT_QUOTES, 'UTF-8'); ?>">
+                        <input type="hidden" name="current_image" value="<?php echo htmlspecialchars($blog['image'], ENT_QUOTES, 'UTF-8'); ?>">
                         <div class="form-group">
                             <label>Título</label>
                             <input type="text" class="form-control" name="title" value="<?php echo htmlspecialchars($blog['title'], ENT_QUOTES, 'UTF-8'); ?>" required>
@@ -141,8 +189,14 @@ $blogs = $data['blogs'];
                             <input type="text" class="form-control" name="author" value="<?php echo htmlspecialchars($blog['author'], ENT_QUOTES, 'UTF-8'); ?>" required>
                         </div>
                         <div class="form-group">
-                            <label>Imagem</label>
-                            <input type="text" class="form-control" name="image" value="<?php echo htmlspecialchars($blog['image'], ENT_QUOTES, 'UTF-8'); ?>" required>
+                            <label>Imagem (URL)</label>
+                            <input type="text" class="form-control" name="image" value="<?php echo htmlspecialchars($blog['image'], ENT_QUOTES, 'UTF-8'); ?>">
+                            <small class="form-text text-muted">Mantém a imagem actual ou indica um novo endereço.</small>
+                        </div>
+                        <div class="form-group">
+                            <label>Substituir imagem</label>
+                            <input type="file" class="form-control-file" name="image_file" accept="image/png,image/jpeg,image/webp">
+                            <small class="form-text text-muted">Se carregar um novo ficheiro, ele substituirá a imagem actual.</small>
                         </div>
                         <div class="form-group">
                             <label>Resumo</label>

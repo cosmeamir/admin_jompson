@@ -1,7 +1,10 @@
 (function () {
   const DATA_URL = 'data/site-data.json';
+  const PLACEHOLDER_IMAGE =
+    'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NDAiIGhlaWdodD0iNDAwIiByb2xlPSJpbWciIGFyaWEtbGFiZWw9IlNlbSBpbWFnZW0iPjxyZWN0IHdpZHRoPSI2NDAiIGhlaWdodD0iNDAwIiBmaWxsPSIjZjVmN2ZhIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGR5PSIwLjMuZW0iIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiIGZpbGw9IiNiM2IwYjciIGZvbnQtc2l6ZT0iMjQiIGZvbnQtZmFtaWx5PSdJbnRlcmZhY2UsIHNhbnMtc2VyaWYnPiBTZW0gaW1hZ2VtIDwvdGV4dD48L3N2Zz4=';
 
   function init() {
+    injectStyles();
     loadSiteData()
       .then((data) => {
         if (!data) return;
@@ -137,8 +140,17 @@
     if (breadcrumbTitle) breadcrumbTitle.textContent = post.title;
     metaEl.textContent = `${formatDate(post.date)} · ${post.author}`;
 
+    if (imageEl) {
+      imageEl.loading = 'lazy';
+      applyImageFallback(imageEl);
+    }
+
     if (post.image && imageEl && imageWrapper) {
       imageEl.src = post.image;
+      imageEl.alt = post.title;
+      imageWrapper.style.display = 'block';
+    } else if (imageEl && imageWrapper) {
+      imageEl.src = PLACEHOLDER_IMAGE;
       imageEl.alt = post.title;
       imageWrapper.style.display = 'block';
     } else if (imageWrapper) {
@@ -198,12 +210,16 @@
     const entry = document.createElement('div');
     entry.className = 'blog-entry';
 
-    const link = document.createElement('a');
-    link.className = 'block-20 d-flex align-items-end';
-    link.href = `blog-single.html?slug=${encodeURIComponent(post.slug)}`;
-    if (post.image) {
-      link.style.backgroundImage = `url('${post.image}')`;
-    }
+    const imageWrapper = document.createElement('a');
+    imageWrapper.className = 'blog-entry-image-wrapper block-20';
+    imageWrapper.href = `blog-single.html?slug=${encodeURIComponent(post.slug)}`;
+
+    const img = document.createElement('img');
+    img.src = getImageSource(post);
+    img.alt = post.title || 'Imagem do artigo';
+    img.loading = 'lazy';
+    applyImageFallback(img);
+    imageWrapper.appendChild(img);
 
     const meta = document.createElement('div');
     meta.className = 'meta-date text-center p-2';
@@ -213,8 +229,7 @@
       <span class="mos">${dateParts.month}</span>
       <span class="yr">${dateParts.year}</span>
     `;
-
-    link.appendChild(meta);
+    imageWrapper.appendChild(meta);
 
     const text = document.createElement('div');
     text.className = 'text bg-white p-4';
@@ -222,7 +237,7 @@
     const heading = document.createElement('h3');
     heading.className = 'heading';
     const headingLink = document.createElement('a');
-    headingLink.href = link.href;
+    headingLink.href = imageWrapper.href;
     headingLink.textContent = post.title;
     heading.appendChild(headingLink);
 
@@ -241,14 +256,14 @@
     more.className = 'mb-0';
     const moreLink = document.createElement('a');
     moreLink.className = 'btn btn-primary';
-    moreLink.href = link.href;
+    moreLink.href = imageWrapper.href;
     moreLink.innerHTML = 'Saber Mais<span class="ion-ios-arrow-round-forward"></span>';
     more.appendChild(moreLink);
 
     const metaInfo = document.createElement('p');
     metaInfo.className = 'ml-auto mb-0';
     metaInfo.innerHTML = `
-      <a href="${link.href}" class="mr-2">${post.author}</a>
+      <a href="${imageWrapper.href}" class="mr-2">${post.author}</a>
       <span class="text-muted">${formatDate(post.date)}</span>
     `;
 
@@ -257,7 +272,7 @@
 
     text.appendChild(footer);
 
-    entry.appendChild(link);
+    entry.appendChild(imageWrapper);
     entry.appendChild(text);
     col.appendChild(entry);
     return col;
@@ -268,11 +283,16 @@
     wrapper.className = 'block-21 mb-4 d-flex';
 
     const imageLink = document.createElement('a');
-    imageLink.className = 'blog-img mr-4';
+    imageLink.className = 'blog-img mr-4 d-inline-block overflow-hidden rounded';
     imageLink.href = `blog-single.html?slug=${encodeURIComponent(post.slug)}`;
-    if (post.image) {
-      imageLink.style.backgroundImage = `url(${post.image})`;
-    }
+
+    const img = document.createElement('img');
+    img.className = 'footer-blog-thumb';
+    img.src = getImageSource(post);
+    img.alt = post.title || 'Imagem do artigo';
+    img.loading = 'lazy';
+    applyImageFallback(img);
+    imageLink.appendChild(img);
 
     const text = document.createElement('div');
     text.className = 'text';
@@ -304,11 +324,16 @@
     wrapper.className = 'block-21 mb-4 d-flex';
 
     const imageLink = document.createElement('a');
-    imageLink.className = 'blog-img mr-4';
+    imageLink.className = 'blog-img mr-4 d-inline-block overflow-hidden rounded';
     imageLink.href = `blog-single.html?slug=${encodeURIComponent(post.slug)}`;
-    if (post.image) {
-      imageLink.style.backgroundImage = `url(${post.image})`;
-    }
+
+    const img = document.createElement('img');
+    img.className = 'sidebar-blog-thumb';
+    img.src = getImageSource(post);
+    img.alt = post.title || 'Imagem do artigo';
+    img.loading = 'lazy';
+    applyImageFallback(img);
+    imageLink.appendChild(img);
 
     const text = document.createElement('div');
     text.className = 'text';
@@ -333,6 +358,42 @@
     wrapper.appendChild(imageLink);
     wrapper.appendChild(text);
     return wrapper;
+  }
+
+  function injectStyles() {
+    if (document.getElementById('site-data-dynamic-styles')) return;
+    const style = document.createElement('style');
+    style.id = 'site-data-dynamic-styles';
+    style.textContent = `
+      .blog-entry-image-wrapper { position: relative; display: block; overflow: hidden; border-radius: 0.5rem 0.5rem 0 0; background: #f8f9fa; }
+      .blog-entry-image-wrapper::before { content: ''; display: block; padding-top: 62.5%; }
+      .blog-entry-image-wrapper img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease; }
+      .blog-entry-image-wrapper:hover img { transform: scale(1.03); }
+      .blog-entry-image-wrapper .meta-date { position: absolute; left: 1rem; bottom: 1rem; background: rgba(255, 255, 255, 0.92); border-radius: 0.75rem; }
+      .footer-blog-thumb, .sidebar-blog-thumb { width: 80px; height: 80px; object-fit: cover; }
+      @media (max-width: 767.98px) {
+        .footer-blog-thumb, .sidebar-blog-thumb { width: 64px; height: 64px; }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  function getImageSource(post) {
+    if (post && typeof post.image === 'string' && post.image.trim() !== '') {
+      return post.image.trim();
+    }
+    return PLACEHOLDER_IMAGE;
+  }
+
+  function applyImageFallback(imageElement) {
+    if (!imageElement || typeof imageElement.addEventListener !== 'function') return;
+    imageElement.addEventListener('error', function handleError() {
+      if (imageElement.dataset && imageElement.dataset.fallbackApplied === 'true') return;
+      if (imageElement.dataset) {
+        imageElement.dataset.fallbackApplied = 'true';
+      }
+      imageElement.src = PLACEHOLDER_IMAGE;
+    });
   }
 
   function getDateParts(dateString) {

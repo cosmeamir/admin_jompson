@@ -4,6 +4,9 @@ session_start();
 const ADMIN_USER = 'admin';
 const ADMIN_PASS = 'admin123';
 const DATA_FILE = __DIR__ . '/../data/site-data.json';
+const UPLOAD_DIR = __DIR__ . '/../uploads/blog';
+const UPLOAD_URL = 'uploads/blog';
+const MAX_UPLOAD_SIZE = 2 * 1024 * 1024; // 2MB
 
 function load_data(): array
 {

@@ -13,5 +13,6 @@ $data['stats']['clients'] = max(0, (int) ($_POST['clients'] ?? 0));
 $data['stats']['experience'] = max(0, (int) ($_POST['experience'] ?? 0));
 
 save_data($data);
+$_SESSION['admin_success'] = 'Indicadores actualizados com sucesso.';
 header('Location: dashboard.php');
 exit;
