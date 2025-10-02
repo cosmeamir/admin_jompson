@@ -203,78 +203,92 @@
   }
 
   function createBlogCard(post, options) {
-    const showExcerpt = options && options.showExcerpt;
+    const showExcerpt = !options || options.showExcerpt !== false;
     const col = document.createElement('div');
-    col.className = 'col-md-6 col-lg-4 ftco-animate';
+    col.className = 'col-md-6 col-lg-4 ftco-animate d-flex';
 
-    const entry = document.createElement('div');
-    entry.className = 'blog-entry';
+    const card = document.createElement('article');
+    card.className = 'blog-card w-100 d-flex flex-column';
 
-    const imageWrapper = document.createElement('a');
-    imageWrapper.className = 'blog-entry-image-wrapper block-20';
-    imageWrapper.href = `blog-single.html?slug=${encodeURIComponent(post.slug)}`;
+    const imageSection = document.createElement('div');
+    imageSection.className = 'blog-card-figure position-relative';
+
+    const imageLink = document.createElement('a');
+    imageLink.className = 'blog-card-image d-block';
+    imageLink.href = `blog-single.html?slug=${encodeURIComponent(post.slug)}`;
 
     const img = document.createElement('img');
     img.src = getImageSource(post);
     img.alt = post.title || 'Imagem do artigo';
     img.loading = 'lazy';
     applyImageFallback(img);
-    imageWrapper.appendChild(img);
+    imageLink.appendChild(img);
 
-    const meta = document.createElement('div');
-    meta.className = 'meta-date text-center p-2';
     const dateParts = getDateParts(post.date);
-    meta.innerHTML = `
-      <span class="day">${dateParts.day}</span>
-      <span class="mos">${dateParts.month}</span>
-      <span class="yr">${dateParts.year}</span>
-    `;
-    imageWrapper.appendChild(meta);
+    const dateBadge = document.createElement('div');
+    dateBadge.className = 'blog-card-date text-center';
+    const daySpan = document.createElement('span');
+    daySpan.className = 'day';
+    daySpan.textContent = dateParts.day;
+    const monthSpan = document.createElement('span');
+    monthSpan.className = 'month';
+    monthSpan.textContent = dateParts.month;
+    const yearSpan = document.createElement('span');
+    yearSpan.className = 'year';
+    yearSpan.textContent = dateParts.year;
+    dateBadge.appendChild(daySpan);
+    dateBadge.appendChild(monthSpan);
+    dateBadge.appendChild(yearSpan);
 
-    const text = document.createElement('div');
-    text.className = 'text bg-white p-4';
+    imageSection.appendChild(imageLink);
+    imageSection.appendChild(dateBadge);
+
+    const body = document.createElement('div');
+    body.className = 'blog-card-body bg-white p-4 d-flex flex-column flex-grow-1';
 
     const heading = document.createElement('h3');
-    heading.className = 'heading';
+    heading.className = 'heading mb-3';
     const headingLink = document.createElement('a');
-    headingLink.href = imageWrapper.href;
+    headingLink.href = imageLink.href;
     headingLink.textContent = post.title;
     heading.appendChild(headingLink);
+    body.appendChild(heading);
 
-    text.appendChild(heading);
-
-    if (showExcerpt) {
+    if (showExcerpt && post.excerpt) {
       const paragraph = document.createElement('p');
+      paragraph.className = 'blog-card-excerpt flex-grow-1';
       paragraph.textContent = post.excerpt;
-      text.appendChild(paragraph);
+      body.appendChild(paragraph);
     }
 
     const footer = document.createElement('div');
-    footer.className = 'd-flex align-items-center mt-4';
+    footer.className = 'blog-card-footer d-flex align-items-center justify-content-between mt-4 pt-2';
 
-    const more = document.createElement('p');
-    more.className = 'mb-0';
     const moreLink = document.createElement('a');
     moreLink.className = 'btn btn-primary';
-    moreLink.href = imageWrapper.href;
+    moreLink.href = imageLink.href;
     moreLink.innerHTML = 'Saber Mais<span class="ion-ios-arrow-round-forward"></span>';
-    more.appendChild(moreLink);
 
-    const metaInfo = document.createElement('p');
-    metaInfo.className = 'ml-auto mb-0';
-    metaInfo.innerHTML = `
-      <a href="${imageWrapper.href}" class="mr-2">${post.author}</a>
-      <span class="text-muted">${formatDate(post.date)}</span>
-    `;
+    const metaInfo = document.createElement('div');
+    metaInfo.className = 'blog-card-meta text-right';
+    const authorSpan = document.createElement('span');
+    authorSpan.className = 'author d-block';
+    authorSpan.textContent = post.author || '';
+    const dateSpan = document.createElement('span');
+    dateSpan.className = 'date text-muted';
+    dateSpan.textContent = formatDate(post.date);
+    metaInfo.appendChild(authorSpan);
+    metaInfo.appendChild(dateSpan);
 
-    footer.appendChild(more);
+    footer.appendChild(moreLink);
     footer.appendChild(metaInfo);
 
-    text.appendChild(footer);
+    body.appendChild(footer);
 
-    entry.appendChild(imageWrapper);
-    entry.appendChild(text);
-    col.appendChild(entry);
+    card.appendChild(imageSection);
+    card.appendChild(body);
+    col.appendChild(card);
+
     return col;
   }
 
@@ -365,12 +379,26 @@
     const style = document.createElement('style');
     style.id = 'site-data-dynamic-styles';
     style.textContent = `
-      .blog-entry-image-wrapper { position: relative; display: block; overflow: hidden; border-radius: 0.5rem 0.5rem 0 0; background: #f8f9fa; }
-      .blog-entry-image-wrapper::before { content: ''; display: block; padding-top: 62.5%; }
-      .blog-entry-image-wrapper img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease; }
-      .blog-entry-image-wrapper:hover img { transform: scale(1.03); }
-      .blog-entry-image-wrapper .meta-date { position: absolute; left: 1rem; bottom: 1rem; background: rgba(255, 255, 255, 0.92); border-radius: 0.75rem; }
+      .blog-card { border-radius: 0.75rem; overflow: hidden; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.06); background: #fff; transition: transform 0.3s ease, box-shadow 0.3s ease; }
+      .blog-card:hover { transform: translateY(-6px); box-shadow: 0 25px 45px rgba(0, 0, 0, 0.1); }
+      .blog-card-figure { position: relative; background: #f8f9fa; overflow: hidden; }
+      .blog-card-image { position: relative; display: block; overflow: hidden; }
+      .blog-card-image::before { content: ''; display: block; padding-top: 62.5%; }
+      .blog-card-image img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease; }
+      .blog-card:hover .blog-card-image img { transform: scale(1.05); }
+      .blog-card-date { position: absolute; top: 1rem; left: 1rem; background: #1d62f0; color: #fff; border-radius: 0.75rem; padding: 0.5rem 0.85rem; line-height: 1.1; text-transform: uppercase; font-weight: 700; box-shadow: 0 8px 20px rgba(29, 98, 240, 0.3); }
+      .blog-card-date .day { display: block; font-size: 1.8rem; }
+      .blog-card-date .month { display: block; font-size: 0.95rem; letter-spacing: 0.08em; }
+      .blog-card-date .year { display: block; font-size: 0.75rem; opacity: 0.85; }
+      .blog-card-body { min-height: 260px; }
+      .blog-card-excerpt { color: #6c757d; margin-bottom: 0; }
+      .blog-card-footer .btn { padding-inline: 1.5rem; border-radius: 999px; font-weight: 600; }
+      .blog-card-meta .author { font-weight: 700; color: #343a40; }
+      .blog-card-meta .date { font-size: 0.85rem; }
       .footer-blog-thumb, .sidebar-blog-thumb { width: 80px; height: 80px; object-fit: cover; }
+      @media (max-width: 991.98px) {
+        .blog-card-body { min-height: auto; }
+      }
       @media (max-width: 767.98px) {
         .footer-blog-thumb, .sidebar-blog-thumb { width: 64px; height: 64px; }
       }
@@ -402,7 +430,8 @@
       return { day: '--', month: '--', year: '' };
     }
     const day = String(date.getDate()).padStart(2, '0');
-    const month = capitalize(date.toLocaleString('pt-PT', { month: 'short' }));
+    const rawMonth = date.toLocaleString('pt-PT', { month: 'short' }) || '';
+    const month = capitalize(rawMonth.replace('.', '').trim());
     const year = String(date.getFullYear());
     return { day, month, year };
   }
@@ -412,11 +441,11 @@
     if (Number.isNaN(date.getTime())) {
       return dateString || '';
     }
-    return capitalize(new Intl.DateTimeFormat('pt-PT', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric'
-    }).format(date));
+    const day = String(date.getDate()).padStart(2, '0');
+    const rawMonth = date.toLocaleString('pt-PT', { month: 'short' }) || '';
+    const month = capitalize(rawMonth.replace('.', '').trim());
+    const year = String(date.getFullYear());
+    return `${day} ${month} ${year}`.trim();
   }
 
   function formatContent(text) {
