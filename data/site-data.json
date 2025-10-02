@@ -1,0 +1,36 @@
+{
+  "stats": {
+    "services": 195,
+    "clients": 189,
+    "experience": 5
+  },
+  "blogs": [
+    {
+      "slug": "bodiva-e-pnud-estreitam-parceria",
+      "title": "BODIVA e PNUD estreitam parceria para fortalecer o mercado de capitais",
+      "date": "2025-02-28",
+      "author": "Admin",
+      "image": "images/image_1.jpg",
+      "excerpt": "A BODIVA e o Programa das Nações Unidas para o Desenvolvimento anunciaram novas iniciativas para dinamizar o mercado de capitais angolano.",
+      "content": "A Bolsa de Dívida e Valores de Angola (BODIVA) e o Programa das Nações Unidas para o Desenvolvimento (PNUD) assinaram um memorando de entendimento para desenvolver projectos conjuntos orientados à capacitação e ao reforço das empresas nacionais.\n\nA parceria prevê a criação de programas de formação, campanhas de educação financeira e apoio directo às pequenas e médias empresas que pretendam aceder ao mercado de capitais."
+    },
+    {
+      "slug": "angola-crescimento-economico-2025",
+      "title": "Angola regista crescimento de 4,4% na economia em 2025",
+      "date": "2025-09-20",
+      "author": "Admin",
+      "image": "images/image_2.jpg",
+      "excerpt": "Relatório do Ministério da Economia indica expansão sustentada com destaque para os sectores agrícola e energético.",
+      "content": "O Ministério da Economia e Planeamento divulgou que o Produto Interno Bruto de Angola cresceu 4,4% em 2025, impulsionado pela diversificação económica.\n\nO estudo destaca o contributo do sector agrícola, que apresentou o maior volume de exportações dos últimos cinco anos, e do sector energético, que continua a ser responsável por grande parte das receitas fiscais do país."
+    },
+    {
+      "slug": "consultoria-empresarial-estrategias-2025",
+      "title": "Consultoria empresarial: 5 estratégias para acelerar resultados",
+      "date": "2025-01-15",
+      "author": "Equipa JOMPSON",
+      "image": "images/image_3.jpg",
+      "excerpt": "Conheça cinco boas práticas que ajudam empresas a consolidarem processos e aumentarem a produtividade.",
+      "content": "A consultoria empresarial desempenha um papel essencial na definição de planos de crescimento sustentáveis. Entre as principais estratégias estão a revisão periódica de processos internos, a definição de indicadores de desempenho e a implementação de ferramentas digitais.\n\nTambém é fundamental promover a formação contínua das equipas e manter uma cultura de inovação que incentive a colaboração entre departamentos."
+    }
+  ]
+}
